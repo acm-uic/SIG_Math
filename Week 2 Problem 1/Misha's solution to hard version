@@ -1,0 +1,42 @@
+;;; This program is intended as a solution for UIC SIG Math, problem 2.
+
+;;; Author: Misha Ryabko
+
+;;; The problem statement is as follows:
+;;; Print the first n primes(in this case n = 10), without using any variables, assignment operators, or variable parameters
+;;; Even though procedures are first class in scheme, and thus indistinguishable from data, using a procedure as a return value or as a parameter do not violate the rules
+;;; Also, the "define" operator will only be considered an assignment operator when assigning a value to a variable, not a procedure definition
+
+;;; This problem starts out by assuming a list of 1 through n is given
+;;; First portion of the program is the solution to the easy portion of the problem
+
+#lang scheme
+
+(define return-nth-value (lambda () 10))
+
+(define generate-list-of-numbers (lambda (function) 
+                      (if (= (function) 3)
+                          (list 2)
+                          (cons (- (function) 1) (generate-list-of-numbers (lambda () (- (function) 1))))))) ;; this procedure takes a procedure as an argument, and generates a list of numbers from the return value of the argument procedure until 2(IE the original argument is a procedure which returns 20, the generate-list-of-numbers makes a list (19 18 17... 3 2)
+
+(define generate-list-of-lambdas (lambda (function) 
+                      (if (= (function) 3)
+                          (list (lambda () 2))
+                          (cons (lambda () (- (function) 1)) (generate-list-of-lambdas (lambda () (- (function) 1))))))) ;; this procedure takes a procedure as an argument, and generates a list of numbers from the return value of the argument procedure until 2(IE the original argument is a procedure which returns 20, the generate-list-of-numbers makes a list (19 18 17... 3 2)
+
+(define mod-map (lambda (x)
+                        (map (lambda (y) (lambda () (modulo (x) (y)))) (generate-list-of-lambdas x)))) ;; need to change this list to return a list of lambdas, instead of just returning data
+
+(define iszero? (lambda (x)
+                (= (x) 0))) ;; checks if return value from argument procedure procedure is zero
+
+(define prime-check-npmv? (lambda (x)
+                       (not (ormap iszero? (mod-map x))))) ;; takes a procedure as the argument, looks at the return value of the procedure, and checks for primality by using the iszero? predicate
+
+;; npmv means no parameter variables
+(define first-n-primes-npmv (lambda (function)
+                              (if (= (function) 2)
+                                  (list 2)
+                                  (if (prime-check-npmv? function)
+                                      (cons (function) (first-n-primes-npmv (lambda () (- (function) 1))))
+                                      (first-n-primes-npmv (lambda () (- (function) 1)))))))
